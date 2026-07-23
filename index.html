@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>우리의 맛집 리스트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="gate" class="gate">
+  <form id="gate-form" class="gate-box">
+    <p class="gate-title">🔒 비밀번호를 입력하세요</p>
+    <input id="gate-input" class="gate-input" type="password" inputmode="numeric" autocomplete="off" autofocus>
+    <button type="submit" class="gate-submit">입장하기</button>
+    <p id="gate-error" class="gate-error" hidden>비밀번호가 틀렸어요</p>
+  </form>
+</div>
+<script>
+  (function () {
+    var PASSWORD = "9253";
+    var STORAGE_KEY = "matjip_gate_ok";
+    var gate = document.getElementById("gate");
+    var form = document.getElementById("gate-form");
+    var input = document.getElementById("gate-input");
+    var error = document.getElementById("gate-error");
+
+    if (localStorage.getItem(STORAGE_KEY) === "1") {
+      gate.hidden = true;
+    } else {
+      input.focus();
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (input.value === PASSWORD) {
+        localStorage.setItem(STORAGE_KEY, "1");
+        gate.hidden = true;
+      } else {
+        error.hidden = false;
+        input.value = "";
+        input.focus();
+      }
+    });
+  })();
+</script>
+
+<header class="page-header">
+  <button id="filter-open" class="filter-open" aria-label="분류 열기">
+    <span></span><span></span><span></span>
+  </button>
+  <h1>우리의 맛집 리스트</h1>
+  <p class="subtitle">지역과 음식 종류로 맛집을 찾아보세요</p>
+</header>
+
+<main>
+  <section id="restaurant-list" class="restaurant-list"></section>
+</main>
+
+<div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
+<aside id="sidebar" class="sidebar" hidden>
+  <div class="sidebar-header">
+    <h2>분류</h2>
+    <button id="filter-close" class="filter-close" aria-label="분류 닫기">&times;</button>
+  </div>
+
+  <div class="filter-group">
+    <h3>지역</h3>
+    <div id="filter-region" class="filter-pills"></div>
+  </div>
+
+  <div class="filter-group">
+    <h3>음식 종류</h3>
+    <div id="filter-category" class="filter-pills"></div>
+  </div>
+
+  <button id="filter-reset" class="filter-reset">필터 초기화</button>
+</aside>
+
+<div id="lightbox" class="lightbox" hidden>
+  <button id="lightbox-close" class="lightbox-close" aria-label="확대 사진 닫기">&times;</button>
+  <img id="lightbox-img" class="lightbox-img" alt="">
+</div>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
