@@ -55,18 +55,22 @@ function makeMenuRow(menu) {
   const row = document.createElement("div");
   row.className = "menu-row";
 
-  const img = document.createElement("img");
-  img.className = "menu-thumb";
-  img.src = menu.image;
-  img.alt = menu.name;
-  img.loading = "lazy";
-  img.addEventListener("load", () => img.classList.add("loaded"));
-  img.addEventListener("error", () => {
-    const fallback = document.createElement("div");
-    fallback.className = "menu-thumb menu-thumb-fallback";
-    fallback.textContent = "사진 없음";
-    img.replaceWith(fallback);
-  });
+  if (menu.image) {
+    const img = document.createElement("img");
+    img.className = "menu-thumb";
+    img.src = menu.image;
+    img.alt = menu.name;
+    img.loading = "lazy";
+    img.addEventListener("load", () => img.classList.add("loaded"));
+    img.addEventListener("error", () => {
+      const fallback = document.createElement("div");
+      fallback.className = "menu-thumb menu-thumb-fallback";
+      fallback.textContent = "사진 없음";
+      img.replaceWith(fallback);
+    });
+    makeZoomable(img);
+    row.appendChild(img);
+  }
 
   const info = document.createElement("div");
   info.className = "menu-info";
@@ -76,7 +80,6 @@ function makeMenuRow(menu) {
     <p class="menu-price">${menu.price}</p>
   `;
 
-  row.appendChild(img);
   row.appendChild(info);
   return row;
 }
