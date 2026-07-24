@@ -68,7 +68,6 @@ function makeMenuRow(menu) {
       fallback.textContent = "사진 없음";
       img.replaceWith(fallback);
     });
-    makeZoomable(img);
     row.appendChild(img);
   }
 
