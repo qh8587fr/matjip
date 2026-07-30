@@ -113,95 +113,123 @@ function makePhotoGallery(r) {
   return wrap;
 }
 
-function getFilteredRestaurants() {
-  return restaurants.filter((r) => {
-    const regionOk = activeFilter.region === "전체" || r.region === activeFilter.region;
-    const categoryOk = activeFilter.category === "전체" || r.category === activeFilter.category;
-    return regionOk && categoryOk;
-  });
+function getFilteredByCategory() {
+  return restaurants.filter(
+    (r) => activeFilter.category === "전체" || r.category === activeFilter.category
+  );
+}
+
+function getRegionColumns() {
+  const filtered = getFilteredByCategory();
+  const regionOrder = [...new Set(restaurants.map((r) => r.region))];
+  const orderedRegions =
+    activeFilter.region === "전체"
+      ? regionOrder
+      : [activeFilter.region, ...regionOrder.filter((r) => r !== activeFilter.region)];
+
+  return orderedRegions
+    .map((region) => ({ region, list: filtered.filter((r) => r.region === region) }))
+    .filter((col) => col.list.length > 0);
+}
+
+function buildRestaurantCard(r) {
+  const card = document.createElement("article");
+  card.className = "restaurant-card";
+
+  const photos = document.createElement("div");
+  photos.className = "card-photos";
+  photos.appendChild(makePhotoCell(r.imageKey, "외관", "외관"));
+  photos.appendChild(makePhotoCell(r.imageKey, "내부사진", "내부"));
+  card.appendChild(photos);
+
+  const body = document.createElement("div");
+  body.className = "card-body";
+
+  const topRow = document.createElement("div");
+  topRow.className = "card-top-row";
+  topRow.innerHTML = `
+    <h3 class="card-title">${r.name}</h3>
+    <div class="card-tags">
+      <span class="tag">${r.region}</span>
+      <span class="tag">${r.category}</span>
+    </div>
+  `;
+  body.appendChild(topRow);
+
+  const menuSection = document.createElement("div");
+  menuSection.className = "menu-section";
+  menuSection.appendChild(makeMenuRow(repMenu(r)));
+
+  const restMenus = r.menus.slice(1);
+  if (restMenus.length > 0) {
+    const isOpen = expanded.has(r.name);
+    const moreList = document.createElement("div");
+    moreList.className = "menu-more-list";
+    moreList.hidden = !isOpen;
+    restMenus.forEach((m) => moreList.appendChild(makeMenuRow(m)));
+
+    const moreBtn = document.createElement("button");
+    moreBtn.type = "button";
+    moreBtn.className = "menu-more-toggle";
+    moreBtn.textContent = isOpen ? "메뉴 접기" : `메뉴 더보기 (${restMenus.length})`;
+    moreBtn.addEventListener("click", () => {
+      if (expanded.has(r.name)) {
+        expanded.delete(r.name);
+      } else {
+        expanded.add(r.name);
+      }
+      renderList();
+    });
+
+    menuSection.appendChild(moreList);
+    menuSection.appendChild(moreBtn);
+  }
+
+  body.appendChild(menuSection);
+
+  const gallery = makePhotoGallery(r);
+  if (gallery) body.appendChild(gallery);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  actions.innerHTML = `
+    <a class="map-link" href="${r.mapUrl}" target="_blank" rel="noopener">${mapLabel(r.mapUrl)}</a>
+  `;
+  body.appendChild(actions);
+
+  card.appendChild(body);
+  return card;
 }
 
 function renderList() {
-  const list = document.getElementById("restaurant-list");
-  list.innerHTML = "";
+  const board = document.getElementById("restaurant-list");
+  board.innerHTML = "";
 
-  const filtered = getFilteredRestaurants();
+  const columns = getRegionColumns();
 
-  if (filtered.length === 0) {
+  if (columns.length === 0) {
     const empty = document.createElement("p");
     empty.className = "empty-state";
     empty.textContent = "조건에 맞는 식당이 없어요.";
-    list.appendChild(empty);
+    board.appendChild(empty);
     return;
   }
 
-  filtered.forEach((r) => {
-    const card = document.createElement("article");
-    card.className = "restaurant-card";
+  columns.forEach(({ region, list }) => {
+    const column = document.createElement("div");
+    column.className = "board-column";
 
-    const photos = document.createElement("div");
-    photos.className = "card-photos";
-    photos.appendChild(makePhotoCell(r.imageKey, "외관", "외관"));
-    photos.appendChild(makePhotoCell(r.imageKey, "내부사진", "내부"));
-    card.appendChild(photos);
+    const header = document.createElement("h2");
+    header.className = "board-column-header";
+    header.textContent = region;
+    column.appendChild(header);
 
-    const body = document.createElement("div");
-    body.className = "card-body";
+    const columnList = document.createElement("div");
+    columnList.className = "board-column-list";
+    list.forEach((r) => columnList.appendChild(buildRestaurantCard(r)));
+    column.appendChild(columnList);
 
-    const topRow = document.createElement("div");
-    topRow.className = "card-top-row";
-    topRow.innerHTML = `
-      <h2 class="card-title">${r.name}</h2>
-      <div class="card-tags">
-        <span class="tag">${r.region}</span>
-        <span class="tag">${r.category}</span>
-      </div>
-    `;
-    body.appendChild(topRow);
-
-    const menuSection = document.createElement("div");
-    menuSection.className = "menu-section";
-    menuSection.appendChild(makeMenuRow(repMenu(r)));
-
-    const restMenus = r.menus.slice(1);
-    if (restMenus.length > 0) {
-      const isOpen = expanded.has(r.name);
-      const moreList = document.createElement("div");
-      moreList.className = "menu-more-list";
-      moreList.hidden = !isOpen;
-      restMenus.forEach((m) => moreList.appendChild(makeMenuRow(m)));
-
-      const moreBtn = document.createElement("button");
-      moreBtn.type = "button";
-      moreBtn.className = "menu-more-toggle";
-      moreBtn.textContent = isOpen ? "메뉴 접기" : `메뉴 더보기 (${restMenus.length})`;
-      moreBtn.addEventListener("click", () => {
-        if (expanded.has(r.name)) {
-          expanded.delete(r.name);
-        } else {
-          expanded.add(r.name);
-        }
-        renderList();
-      });
-
-      menuSection.appendChild(moreList);
-      menuSection.appendChild(moreBtn);
-    }
-
-    body.appendChild(menuSection);
-
-    const gallery = makePhotoGallery(r);
-    if (gallery) body.appendChild(gallery);
-
-    const actions = document.createElement("div");
-    actions.className = "card-actions";
-    actions.innerHTML = `
-      <a class="map-link" href="${r.mapUrl}" target="_blank" rel="noopener">${mapLabel(r.mapUrl)}</a>
-    `;
-    body.appendChild(actions);
-
-    card.appendChild(body);
-    list.appendChild(card);
+    board.appendChild(column);
   });
 }
 

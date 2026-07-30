@@ -72,8 +72,8 @@ body {
 }
 
 main {
-  padding: 8px 16px 16px;
-  max-width: 480px;
+  padding: 8px 0 16px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -84,8 +84,30 @@ main {
   padding: 48px 16px;
 }
 
-/* ---- Restaurant cards ---- */
+/* ---- Region column board (Padlet-style) ---- */
 .restaurant-list {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  padding: 4px 16px 16px;
+}
+
+.board-column {
+  flex: 0 0 min(85vw, 340px);
+  scroll-snap-align: start;
+}
+
+.board-column-header {
+  margin: 0 0 12px 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.board-column-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
